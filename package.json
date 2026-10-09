@@ -1,0 +1,29 @@
+{
+  "name": "aquaheat",
+  "version": "0.4.0",
+  "description": "AquaHeat — Mumbai Heat Safety & Resilience Platform",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --no-warnings --test tests/unit/**/*.test.ts",
+    "test:unit": "node --experimental-strip-types --no-warnings --test tests/unit/**/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "validate:sam": "powershell -ExecutionPolicy Bypass -File ./scripts/validate-template.ps1"
+  },
+  "keywords": [
+    "aquaheat",
+    "mumbai",
+    "heat-safety",
+    "weather",
+    "aws-sam",
+    "dynamodb"
+  ],
+  "author": "AquaHeat Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1009.0",
+    "@aws-sdk/lib-dynamodb": "^3.1009.0",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}

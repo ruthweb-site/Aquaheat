@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-app: #F8FAF7;
+    --brand-teal: #087F8C;
+    --brand-aqua: #4FC3C8;
+    --risk-safe: #4CAF7D;
+    --risk-moderate: #F4A340;
+    --risk-high: #EF6C57;
+    --risk-extreme: #D64545;
+    --text-primary: #132A2F;
+    --text-secondary: #48656A;
+    --text-muted: #748E92;
+    --surface-card: #FFFFFF;
+    --surface-soft: #F1F6F4;
+    --surface-tint: #E8F3F1;
+    --border-soft: #E2ECE8;
+    --border-teal-light: #D0E6E7;
+  }
+
+  body {
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Calm, gentle water and warmth effects */
+.aqua-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E2ECE8;
+  box-shadow: 0 4px 20px -2px rgba(8, 127, 140, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.aqua-card:hover {
+  border-color: #D0E6E7;
+  box-shadow: 0 8px 24px -4px rgba(8, 127, 140, 0.08), 0 3px 8px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* Subtle water ripple background pattern */
+.bg-water-subtle {
+  background-image: radial-gradient(#087F8C 0.65px, transparent 0.65px), radial-gradient(#4FC3C8 0.65px, #F8FAF7 0.65px);
+  background-size: 26px 26px;
+  background-position: 0 0, 13px 13px;
+  background-color: #F8FAF7;
+}
+
+/* Smooth custom scrollbars for horizontal pill tracks */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

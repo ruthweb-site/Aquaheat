@@ -1,0 +1,13 @@
+{
+  "name": "@aquaheat/health-function",
+  "version": "0.3.0",
+  "description": "AquaHeat Health Check Probe Lambda Function",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --experimental-strip-types --test tests/health.test.ts"
+  },
+  "keywords": ["aquaheat", "lambda", "healthcheck"],
+  "author": "AquaHeat Team",
+  "license": "MIT"
+}
