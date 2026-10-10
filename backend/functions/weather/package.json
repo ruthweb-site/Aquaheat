@@ -1,0 +1,12 @@
+{
+  "name": "@aquaheat/weather-function",
+  "version": "0.4.0",
+  "description": "AquaHeat Real Weather Observation & Risk Telemetry Lambda Function",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["aquaheat", "lambda", "weather"],
+  "author": "AquaHeat Team",
+  "license": "MIT"
+}
