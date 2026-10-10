@@ -3,7 +3,6 @@ version: 1
 applications:
   - appRoot: app/frontend
     frontend:
-      framework: next
       phases:
         preBuild:
           commands:
