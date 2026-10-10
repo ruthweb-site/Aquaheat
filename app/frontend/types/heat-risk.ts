@@ -35,6 +35,15 @@ export interface HeatTimelineSlot {
   isPlaceholder: boolean;
 }
 
+export interface HourlyForecastPoint {
+  timestamp: string; // ISO 8601 string with local timezone offset, e.g. "2026-10-10T14:00:00+05:30"
+  temperature: number; // Forecast temperature (°C)
+  apparentTemperature: number; // Forecast apparent / feels-like temperature (°C)
+  riskLevel: RiskLevel; // Deterministic NOAA heat index category
+  futureHeatRiskScore: number | null; // Preserved as null until Phase 5 ML deployment
+  isForecast: true; // Explicit discriminator labeling values as forecasts, not observations
+}
+
 export type ActivityType =
   | 'WALKING'
   | 'EXERCISE'

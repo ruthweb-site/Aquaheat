@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/ui/header';
 import { Footer } from '@/components/ui/footer';
-import { HeatRiskSection } from '@/components/heat-risk/heat-risk-section';
+import { HeatRiskSection, TelemetryData } from '@/components/heat-risk/heat-risk-section';
 import { ZoneSelectorSection } from '@/components/zones/zone-selector-section';
 import { TimelineSection } from '@/components/timeline/timeline-section';
 import { PersonalExposureSection } from '@/components/exposure/exposure-section';
@@ -15,6 +15,52 @@ import { MumbaiZone } from '@/types/zone';
 export default function HomePage() {
   const [selectedZone, setSelectedZone] =
     useState<MumbaiZone>(DEFAULT_SELECTED_ZONE);
+  const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchWeather = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const backendBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
+    const url = backendBase
+      ? `${backendBase}/weather?zoneId=${encodeURIComponent(selectedZone.id)}`
+      : `/api/weather?zoneId=${encodeURIComponent(selectedZone.id)}`;
+
+    try {
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}: Failed to fetch weather`);
+      }
+
+      const data: TelemetryData = await res.json();
+      setTelemetry(data);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Weather request timed out. Please try again.');
+      } else {
+        const msg = err instanceof Error ? err.message : 'Unable to connect to weather provider';
+        setError(msg);
+      }
+    } finally {
+      clearTimeout(timeoutId);
+      setIsLoading(false);
+    }
+  }, [selectedZone.id]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchWeather();
+  }, [fetchWeather]);
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F8FAF7] text-[#132A2F]">
@@ -97,7 +143,13 @@ export default function HomePage() {
         </section>
 
         {/* 1. CURRENT HEAT RISK */}
-        <HeatRiskSection selectedZone={selectedZone} />
+        <HeatRiskSection
+          selectedZone={selectedZone}
+          telemetry={telemetry}
+          isLoading={isLoading}
+          error={error}
+          onRetry={fetchWeather}
+        />
 
         {/* 2. MUMBAI HEAT ZONES */}
         <ZoneSelectorSection
@@ -106,7 +158,11 @@ export default function HomePage() {
         />
 
         {/* 3. 24-HOUR HEAT TIMELINE */}
-        <TimelineSection />
+        <TimelineSection
+          forecasts={telemetry?.hourlyForecasts}
+          isLoading={isLoading}
+          error={error}
+        />
 
         {/* 4. PERSONAL SAFETY (What are you doing today?) */}
         <PersonalExposureSection />
