@@ -11,14 +11,6 @@
 
 ---
 
-## 🌐 Live Deployment & Demo Links
-
-* 🚀 **Live Web Application (AWS Amplify):** [https://main.d15bsc1go0apo2.amplifyapp.com](https://main.d15bsc1go0apo2.amplifyapp.com)
-* 📖 **Technical Architecture Blog:** [Read Architecture Walkthrough](docs/aquaheat_blog.md)
-* 🎥 **Demo Video:** [3-Minute Product Walkthrough](docs/aquaheat_video_script.md)
-
----
-
 ## 📌 Problem Statement & Context
 
 Mumbai experiences severe **wet-bulb temperature stress** — a hazardous combination of high ambient temperatures and oppressive maritime humidity. In dense urban pockets, the **Urban Heat Island (UHI)** effect elevates localized temperatures by 3°C to 6°C above coastal averages.
