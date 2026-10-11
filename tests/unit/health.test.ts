@@ -11,7 +11,7 @@ test('AquaHeat Health Check Lambda — returns 200 and service status', async ()
   // Validate headers
   assert.ok(response.headers, 'Expected headers to be defined');
   assert.equal(
-    response.headers['Content-Type'],
+    response.headers!['Content-Type'],
     'application/json',
     'Expected application/json content-type'
   );

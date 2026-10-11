@@ -40,6 +40,13 @@ Parameters:
       - 365
     Description: Retention period in days for CloudWatch log groups
 
+  CorsAllowedOrigin:
+    Type: String
+    Default: 'https://main.d15bsc1go0apo2.amplifyapp.com'
+    Description: Allowed origin for API Gateway CORS headers (e.g. 'https://aquaheat.mumbai.gov.in' or 'http://localhost:3000' for local dev)
+    AllowedPattern: '^https?://[a-zA-Z0-9\.\-]+(:[0-9]+)?$'
+    ConstraintDescription: Must be a valid HTTP or HTTPS origin without trailing slash.
+
 # ==============================================================================
 # GLOBALS
 # ==============================================================================
@@ -101,6 +108,12 @@ Resources:
             Transitions:
               - TransitionInDays: 60
                 StorageClass: STANDARD_IA
+          - Id: NoncurrentVersionCleanup
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
       Tags:
         - Key: Project
           Value: AquaHeat
@@ -151,19 +164,19 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # 2. AquaHeatWeather — Observations partitioned by locationId, sorted by timestamp
+  # 2. AquaHeatWeather — Observations partitioned by zoneId, sorted by timestamp
   AquaHeatWeatherTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "AquaHeatWeather-${Environment}"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: locationId
+        - AttributeName: zoneId
           AttributeType: S
         - AttributeName: timestamp
           AttributeType: S
       KeySchema:
-        - AttributeName: locationId
+        - AttributeName: zoneId
           KeyType: HASH
         - AttributeName: timestamp
           KeyType: RANGE
@@ -177,19 +190,19 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # 3. AquaHeatForecasts — Multi-horizon forecasts by locationId, sorted by forecastTimestamp
+  # 3. AquaHeatForecasts — Multi-horizon forecasts by zoneId, sorted by forecastTimestamp
   AquaHeatForecastsTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "AquaHeatForecasts-${Environment}"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: locationId
+        - AttributeName: zoneId
           AttributeType: S
         - AttributeName: forecastTimestamp
           AttributeType: S
       KeySchema:
-        - AttributeName: locationId
+        - AttributeName: zoneId
           KeyType: HASH
         - AttributeName: forecastTimestamp
           KeyType: RANGE
@@ -265,13 +278,13 @@ Resources:
       MethodSettings:
         - ResourcePath: "/*"
           HttpMethod: "*"
-          LoggingLevel: INFO
+          LoggingLevel: 'OFF'
           MetricsEnabled: true
           DataTraceEnabled: false
       Cors:
         AllowMethods: "'GET,OPTIONS'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: "'https://aquaheat.mumbai.gov.in'"
+        AllowOrigin: !Sub "'${CorsAllowedOrigin}'"
         MaxAge: "'600'"
 
   AquaHeatApiAccessLogGroup:
@@ -315,7 +328,6 @@ Resources:
   AquaHeatHealthFunctionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "AquaHeatHealthRole-${Environment}"
       Description: "Least-privilege execution role for AquaHeat Health probe Lambda"
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
@@ -336,6 +348,59 @@ Resources:
                   - logs:PutLogEvents
                 Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/AquaHeatHealth-${Environment}:*"
 
+  # ----------------------------------------------------------------------------
+  # LAMBDA: Real Weather Observation & Telemetry Function
+  # Endpoint: GET /weather?zoneId={zoneId}
+  # ----------------------------------------------------------------------------
+  AquaHeatWeatherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "AquaHeatWeather-${Environment}"
+      Description: "AquaHeat real weather and heat-risk telemetry endpoint GET /weather"
+      CodeUri: ../backend/functions/weather/
+      Handler: index.handler
+      Runtime: nodejs22.x
+      Role: !GetAtt AquaHeatWeatherFunctionRole.Arn
+      Events:
+        WeatherEndpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AquaHeatApi
+            Path: /weather
+            Method: GET
+      Environment:
+        Variables:
+          CORS_ALLOWED_ORIGIN: !Ref CorsAllowedOrigin
+
+  AquaHeatWeatherFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/AquaHeatWeather-${Environment}"
+      RetentionInDays: !Ref LogRetentionDays
+
+  AquaHeatWeatherFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: "Least-privilege execution role for AquaHeat Weather Lambda"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AquaHeatWeatherLoggingPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: AllowCloudWatchLogsCreation
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/AquaHeatWeather-${Environment}:*"
+
 # ==============================================================================
 # OUTPUTS
 # ==============================================================================
@@ -351,6 +416,12 @@ Outputs:
     Value: !Sub "https://${AquaHeatApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/health"
     Export:
       Name: !Sub "AquaHeat-HealthEndpoint-${Environment}"
+
+  WeatherEndpoint:
+    Description: Direct URL for GET /weather endpoint
+    Value: !Sub "https://${AquaHeatApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/weather"
+    Export:
+      Name: !Sub "AquaHeat-WeatherEndpoint-${Environment}"
 
   DataBucketName:
     Description: Name of private AquaHeat data bucket

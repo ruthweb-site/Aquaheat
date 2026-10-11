@@ -4,14 +4,17 @@
  */
 
 // Zone definitions & helpers
-export * from './zones/index';
+export * from './zones/index.ts';
 
 // Weather & Forecast domain models
-export * from './models/weather';
-export * from './models/forecast';
+export * from './models/weather.ts';
+export * from './models/forecast.ts';
 
 // DynamoDB Data Access Layer
-export * from './db/keys';
-export * from './db/client';
-export * from './db/weather-repository';
-export * from './db/forecast-repository';
+export * from './db/keys.ts';
+export * from './db/client.ts';
+export * from './db/weather-repository.ts';
+export * from './db/forecast-repository.ts';
+
+// Weather service & Open-Meteo provider
+export * from './services/weather-service.ts';

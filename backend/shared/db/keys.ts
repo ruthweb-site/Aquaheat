@@ -3,24 +3,24 @@
  * Phase 4 Data Access Layer
  *
  * Aligned with DynamoDB tables defined in infra/template.yaml:
- * - AquaHeatWeather:   PK = locationId (S), SK = timestamp (S)
- * - AquaHeatForecasts: PK = locationId (S), SK = forecastTimestamp (S)
+ * - AquaHeatWeather:   PK = zoneId (S), SK = timestamp (S)
+ * - AquaHeatForecasts: PK = zoneId (S), SK = forecastTimestamp (S)
  */
 
 export interface WeatherPrimaryKey {
-  locationId: string;
+  zoneId: string;
   timestamp: string;
 }
 
 export interface ForecastPrimaryKey {
-  locationId: string;
+  zoneId: string;
   forecastTimestamp: string;
 }
 
 /**
  * Builds the primary key for the AquaHeatWeather table.
  *
- * @param zoneId - Registered Mumbai zone ID (maps to locationId partition key)
+ * @param zoneId - Registered Mumbai zone ID
  * @param timestamp - Observation timestamp in ISO 8601 format
  */
 export function buildWeatherKey(zoneId: string, timestamp: string): WeatherPrimaryKey {
@@ -32,7 +32,7 @@ export function buildWeatherKey(zoneId: string, timestamp: string): WeatherPrima
   }
 
   return {
-    locationId: zoneId,
+    zoneId,
     timestamp,
   };
 }
@@ -40,7 +40,7 @@ export function buildWeatherKey(zoneId: string, timestamp: string): WeatherPrima
 /**
  * Builds the primary key for the AquaHeatForecasts table.
  *
- * @param zoneId - Registered Mumbai zone ID (maps to locationId partition key)
+ * @param zoneId - Registered Mumbai zone ID
  * @param forecastTimestamp - Forecast prediction target timestamp in ISO 8601 format
  */
 export function buildForecastKey(
@@ -55,7 +55,7 @@ export function buildForecastKey(
   }
 
   return {
-    locationId: zoneId,
+    zoneId,
     forecastTimestamp,
   };
 }

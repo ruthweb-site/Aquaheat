@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import {
   validateWeatherObservation,
   ValidationError,
-  WeatherObservation,
+  type WeatherObservation,
 } from '../../backend/shared/models/weather.ts';
 import {
   validateHourlyHeatForecast,
-  HourlyHeatForecast,
+  type HourlyHeatForecast,
 } from '../../backend/shared/models/forecast.ts';
 
 test('Weather Model — validates complete, valid weather observation', () => {
@@ -44,7 +44,7 @@ test('Weather Model — rejects invalid zoneId', () => {
     () => validateWeatherObservation(invalid),
     (err: unknown) => {
       assert.ok(err instanceof ValidationError);
-      assert.equal(err.field, 'zoneId');
+      assert.equal((err as ValidationError).field, 'zoneId');
       return true;
     }
   );
@@ -67,7 +67,7 @@ test('Weather Model — rejects invalid or malformed timestamps', () => {
     () => validateWeatherObservation(invalid),
     (err: unknown) => {
       assert.ok(err instanceof ValidationError);
-      assert.equal(err.field, 'timestamp');
+      assert.equal((err as ValidationError).field, 'timestamp');
       return true;
     }
   );

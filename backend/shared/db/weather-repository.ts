@@ -12,12 +12,12 @@ import {
   QueryCommand,
   BatchWriteCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { WeatherObservation, validateWeatherObservation } from '../models/weather.ts';
+import { validateWeatherObservation, type WeatherObservation } from '../models/weather.ts';
 import { buildWeatherKey, resolveTableName } from './keys.ts';
 import { getDynamoDBDocumentClient } from './client.ts';
 
 export interface WeatherRecordItem extends WeatherObservation {
-  locationId: string; // DynamoDB Partition Key
+  zoneId: string; // DynamoDB Partition Key
   ttl?: number; // Optional Time to Live for historical archival
 }
 
@@ -44,8 +44,8 @@ export class WeatherRepository {
     const key = buildWeatherKey(validated.zoneId, validated.timestamp);
 
     const item: WeatherRecordItem = {
-      locationId: key.locationId,
       ...validated,
+      zoneId: key.zoneId,
     };
 
     await this.docClient.send(
@@ -68,9 +68,9 @@ export class WeatherRepository {
     const result = await this.docClient.send(
       new QueryCommand({
         TableName: this.tableName,
-        KeyConditionExpression: 'locationId = :locationId',
+        KeyConditionExpression: 'zoneId = :zoneId',
         ExpressionAttributeValues: {
-          ':locationId': zoneId,
+          ':zoneId': zoneId,
         },
         ScanIndexForward: false, // Descending order: newest first
         Limit: 1,
@@ -105,12 +105,12 @@ export class WeatherRepository {
       new QueryCommand({
         TableName: this.tableName,
         KeyConditionExpression:
-          'locationId = :locationId AND #ts BETWEEN :startTime AND :endTime',
+          'zoneId = :zoneId AND #ts BETWEEN :startTime AND :endTime',
         ExpressionAttributeNames: {
           '#ts': 'timestamp',
         },
         ExpressionAttributeValues: {
-          ':locationId': zoneId,
+          ':zoneId': zoneId,
           ':startTime': startTime,
           ':endTime': endTime,
         },
@@ -141,8 +141,8 @@ export class WeatherRepository {
         const validated = validateWeatherObservation(obs);
         const key = buildWeatherKey(validated.zoneId, validated.timestamp);
         const item: WeatherRecordItem = {
-          locationId: key.locationId,
           ...validated,
+          zoneId: key.zoneId,
         };
         return {
           PutRequest: {

@@ -12,14 +12,14 @@ import {
   BatchWriteCommand,
 } from '@aws-sdk/lib-dynamodb';
 import {
-  HourlyHeatForecast,
   validateHourlyHeatForecast,
+  type HourlyHeatForecast,
 } from '../models/forecast.ts';
 import { buildForecastKey, resolveTableName } from './keys.ts';
 import { getDynamoDBDocumentClient } from './client.ts';
 
 export interface ForecastRecordItem extends HourlyHeatForecast {
-  locationId: string; // DynamoDB Partition Key
+  zoneId: string; // DynamoDB Partition Key
   forecastTimestamp: string; // DynamoDB Sort Key
   ttl?: number;
 }
@@ -47,9 +47,9 @@ export class ForecastRepository {
     const key = buildForecastKey(validated.zoneId, validated.timestamp);
 
     const item: ForecastRecordItem = {
-      locationId: key.locationId,
-      forecastTimestamp: key.forecastTimestamp,
       ...validated,
+      zoneId: key.zoneId,
+      forecastTimestamp: key.forecastTimestamp,
     };
 
     await this.docClient.send(
@@ -75,9 +75,9 @@ export class ForecastRepository {
         const validated = validateHourlyHeatForecast(fc);
         const key = buildForecastKey(validated.zoneId, validated.timestamp);
         const item: ForecastRecordItem = {
-          locationId: key.locationId,
-          forecastTimestamp: key.forecastTimestamp,
           ...validated,
+          zoneId: key.zoneId,
+          forecastTimestamp: key.forecastTimestamp,
         };
         return {
           PutRequest: {
@@ -112,9 +112,9 @@ export class ForecastRepository {
       new QueryCommand({
         TableName: this.tableName,
         KeyConditionExpression:
-          'locationId = :locationId AND forecastTimestamp BETWEEN :startTime AND :endTime',
+          'zoneId = :zoneId AND forecastTimestamp BETWEEN :startTime AND :endTime',
         ExpressionAttributeValues: {
-          ':locationId': zoneId,
+          ':zoneId': zoneId,
           ':startTime': startTime,
           ':endTime': endTime,
         },
@@ -144,9 +144,9 @@ export class ForecastRepository {
       new QueryCommand({
         TableName: this.tableName,
         KeyConditionExpression:
-          'locationId = :locationId AND forecastTimestamp >= :start',
+          'zoneId = :zoneId AND forecastTimestamp >= :start',
         ExpressionAttributeValues: {
-          ':locationId': zoneId,
+          ':zoneId': zoneId,
           ':start': start,
         },
         ScanIndexForward: true,

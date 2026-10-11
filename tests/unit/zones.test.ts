@@ -22,9 +22,9 @@ test('Mumbai Zones — defines exactly the six designated operational zones', ()
   for (const expected of expectedZones) {
     const zone = MUMBAI_ZONES.find((z) => z.id === expected.id);
     assert.ok(zone, `Zone "${expected.id}" should exist in MUMBAI_ZONES`);
-    assert.equal(zone.name, expected.name, `Zone name mismatch for ${expected.id}`);
+    assert.equal(zone!.name, expected.name, `Zone name mismatch for ${expected.id}`);
     assert.equal(
-      zone.representativeLocation,
+      zone!.representativeLocation,
       expected.location,
       `Representative location mismatch for ${expected.id}`
     );
@@ -66,7 +66,7 @@ test('Mumbai Zones — helper functions (getZoneById, isValidZoneId, getAllZoneI
   // getZoneById
   const colaba = getZoneById('south-mumbai');
   assert.ok(colaba);
-  assert.equal(colaba.representativeLocation, 'Colaba');
+  assert.equal(colaba!.representativeLocation, 'Colaba');
 
   const invalid = getZoneById('non-existent-zone');
   assert.equal(invalid, undefined);

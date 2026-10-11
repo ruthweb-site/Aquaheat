@@ -28,7 +28,7 @@ export function getDynamoDBDocumentClient(
 
   if (!cachedDocClient) {
     const rawClient = new DynamoDBClient({
-      region: process.env.AWS_REGION || 'ap-south-1', // Default to Mumbai AWS region
+      region: process.env.AWS_REGION || 'ap-southeast-2', // Default to Sydney AWS region
     });
 
     cachedDocClient = DynamoDBDocumentClient.from(rawClient, {

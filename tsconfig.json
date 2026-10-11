@@ -9,9 +9,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "baseUrl": ".",
+    "allowImportingTsExtensions": true,
+    "types": ["node"],
     "paths": {
-      "@shared/*": ["backend/shared/*"]
+      "@shared/*": ["./backend/shared/*"]
     }
   },
   "include": [
@@ -20,6 +21,13 @@
   ],
   "exclude": [
     "node_modules",
-    "app/frontend"
+    "app/frontend",
+    "backend/functions/alerts",
+    "backend/functions/emergency",
+    "backend/functions/health",
+    "backend/functions/heat-risk",
+    "backend/functions/recommendations",
+    "backend/functions/weather",
+    "backend/functions/weather-ingestion"
   ]
 }
